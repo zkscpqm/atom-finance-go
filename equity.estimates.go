@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zkscpqm/atom-finance-go/pkg/financial/asset"
-	"github.com/zkscpqm/atom-finance-go/pkg/market"
 	"net/http"
 )
 
-func (c *Client) AnalystEstimates(ctx context.Context, ticker string, mkt market.Code) (rv asset.AnalystEstimateResponse, err error) {
-	targetAsset := asset.EquityAsset(ticker, mkt)
+func (c *Client) AnalystEstimates(ctx context.Context, request asset.AnalystEstimateRequest) (rv asset.AnalystEstimateResponse, err error) {
+	targetAsset := asset.EquityAsset(request.Ticker, request.Market)
 	body := map[string]interface{}{
 		"asset": targetAsset,
 	}
@@ -18,7 +17,7 @@ func (c *Client) AnalystEstimates(ctx context.Context, ticker string, mkt market
 	if err != nil {
 		return rv, fmt.Errorf("failed build analyst estimates URL: %v", err)
 	}
-	resp, err := c.post(ctx, u, body, nil)
+	resp, err := c.post(ctx, u, body, request.ExtraHeaders)
 	if err != nil {
 		return rv, fmt.Errorf("failed to perform equity estimate: %v", err)
 	}

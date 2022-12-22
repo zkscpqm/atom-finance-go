@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/zkscpqm/atom-finance-go"
+	"github.com/zkscpqm/atom-finance-go/pkg/financial/asset"
 	"github.com/zkscpqm/atom-finance-go/pkg/market"
 	"os"
 )
@@ -29,7 +30,11 @@ func main() {
 
 	for _, ticker := range []string{"NKE"} {
 		fmt.Println("getting analyst estimate for", ticker)
-		resp, err := client.AnalystEstimates(context.Background(), ticker, market.USA)
+		resp, err := client.AnalystEstimates(context.Background(),
+			asset.AnalystEstimateRequest{
+				Ticker: ticker,
+				Market: market.USA,
+			})
 		if err != nil {
 			fmt.Println(err)
 			continue

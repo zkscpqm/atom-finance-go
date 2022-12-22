@@ -3,8 +3,15 @@ package asset
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/zkscpqm/atom-finance-go/pkg/market"
 	"strconv"
 )
+
+type AnalystEstimateRequest struct {
+	Ticker       string
+	Market       market.Code
+	ExtraHeaders map[string]string
+}
 
 type AnalystRecommendations struct {
 	Buy        int     `json:"NumberOfBuy"`
