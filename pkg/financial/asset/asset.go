@@ -1,18 +1,18 @@
-package atom
+package asset
 
 import (
 	"encoding/json"
-	"github.com/zkscpqm/atom-finance-go/market"
+	"github.com/zkscpqm/atom-finance-go/pkg/market"
 )
 
-type AssetType string
+type Type string
 
-func (at AssetType) String() string { return string(at) }
+func (t Type) String() string { return string(t) }
 
 const (
-	AssetEquity AssetType = "equity"
-	AssetFund   AssetType = "fund"
-	AssetCrypto AssetType = "crypto"
+	Equity Type = "equity"
+	Fund   Type = "fund"
+	Crypto Type = "crypto"
 )
 
 type renderable interface {
@@ -26,17 +26,13 @@ type Asset struct {
 	Market     string `json:"market"`
 }
 
-func NewAsset(identifier, value string, assetType AssetType, market market.Code) Asset {
+func New(identifier, value string, assetType Type, market market.Code) Asset {
 	return Asset{
 		Identifier: identifier,
 		Value:      value,
 		AssetType:  assetType.String(),
 		Market:     market.String(),
 	}
-}
-
-func NewDefaultAsset(ticker string, market market.Code) Asset {
-	return NewAsset("ticker", ticker, AssetEquity, market)
 }
 
 func (a Asset) render() string {

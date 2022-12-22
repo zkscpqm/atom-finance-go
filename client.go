@@ -3,9 +3,9 @@ package atom
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/zkscpqm/atom-finance-go/market"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -59,8 +59,9 @@ type Client struct {
 
 	apiVersionMajor int
 	apiVersionMinor int
+	apiKey          string
 
-	apiKey string
+	mx *sync.Mutex
 }
 
 func NewClient(cfg *ClientConfig) (*Client, error) {
@@ -87,44 +88,37 @@ func NewClient(cfg *ClientConfig) (*Client, error) {
 	return c, nil
 }
 
+func (c *Client) AddDefaultHeader(key, value string) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+	c.defaultHeaders[key] = value
+}
+
+func (c *Client) RemoveDefaultHeader(key string) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	if _, ok := c.defaultHeaders[key]; ok {
+		delete(c.defaultHeaders, key)
+	}
+}
+
+func (c *Client) DefaultHeaders() (mapCopy map[string]string) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	// Deep copy
+	for k, v := range c.defaultHeaders {
+		mapCopy[k] = v
+	}
+	return mapCopy
+}
+
 func (c *Client) verify() error {
 	return nil
 }
 
 func (c *Client) Close() error {
 	c.client.CloseIdleConnections()
-	return nil
-}
-
-func (c *Client) DEBUGAnalystEstimates(ticker string, mkt market.Code) error {
-	body := map[string]interface{}{
-		"asset": NewDefaultAsset(ticker, mkt),
-	}
-	u, err := c.buildURL("equity", "estimates")
-	if err != nil {
-		return fmt.Errorf("failed build analyst estimates URL: %v", err)
-	}
-	resp, err := c.post(u, body, nil)
-	if err != nil {
-		return fmt.Errorf("failed to perform equity estimate: %v", err)
-	}
-	defer resp.Body.Close()
-
-	tempMap := map[string]interface{}{}
-
-	err = json.NewDecoder(resp.Body).Decode(&tempMap)
-	if err != nil {
-		return fmt.Errorf("failed to decode analyst estimates response: %v", err)
-	}
-
-	prettyResp, err := json.MarshalIndent(tempMap, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal analyst estimates response: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to perform equity estimate: [%d] %s", resp.StatusCode, string(prettyResp))
-	}
-	fmt.Println("RESP:\n", string(prettyResp))
 	return nil
 }

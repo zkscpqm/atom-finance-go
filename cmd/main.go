@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/zkscpqm/atom-finance-go"
-	"github.com/zkscpqm/atom-finance-go/market"
+	"github.com/zkscpqm/atom-finance-go/pkg/market"
 	"os"
 )
 
@@ -23,13 +24,18 @@ func main() {
 		os.Exit(1)
 	}
 	defer client.Close()
+
 	fmt.Println("done!")
 
-	fmt.Println("getting analyst estimate for AAPL...")
-	err = client.DEBUGAnalystEstimates("AAPL", market.USA)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	for _, ticker := range []string{"NKE"} {
+		fmt.Println("getting analyst estimate for", ticker)
+		resp, err := client.AnalystEstimates(context.Background(), ticker, market.USA)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		fmt.Println(resp.Json())
 	}
+
 	fmt.Println("done!")
 }
